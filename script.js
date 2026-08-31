@@ -1,5 +1,5 @@
 onload = () => {
-  document.body.classList.remove("container");
+    document.body.classList.remove("container");
 };
 
 const bgMusic = document.getElementById("bgMusic");
@@ -25,8 +25,9 @@ musicToggle.addEventListener("click", (event) => {
     event.stopPropagation();
 
     if (bgMusic.paused) {
-        bgMusic.play();
-        musicToggle.textContent = "🔊";
+        bgMusic.play().then(() => {
+            musicToggle.textContent = "🔊";
+        }).catch(() => {});
     } else {
         bgMusic.pause();
         musicToggle.textContent = "🔇";
@@ -37,6 +38,12 @@ musicToggle.addEventListener("click", (event) => {
 volumeControl.addEventListener("input", () => {
     bgMusic.volume = volumeControl.value;
 });
+
+
+// ==============================
+// FLOATING PICTURES
+// ==============================
+
 const floatingPictures = [
     "photo1.jpg",
     "photo2.jpg",
@@ -51,23 +58,40 @@ let pictureIndex = 0;
 function createFloatingPicture() {
     const img = document.createElement("img");
 
+    // Cycle through the pictures
     img.src = floatingPictures[pictureIndex];
-
-    pictureIndex++;
-
-    if (pictureIndex >= floatingPictures.length) {
-        pictureIndex = 0;
-    }
+    pictureIndex = (pictureIndex + 1) % floatingPictures.length;
 
     img.classList.add("floating-picture");
 
-    img.style.left = Math.random() * 80 + 5 + "vw";
-
+    // Add it to the page first so we can measure it
     document.body.appendChild(img);
 
+    // Wait until the image has loaded
+    img.onload = () => {
+        const screenWidth = window.innerWidth;
+        const imageWidth = img.offsetWidth;
+
+        // Keep the picture inside the screen
+        const sideMargin = screenWidth < 600 ? 15 : 30;
+
+        const maxLeft = Math.max(
+            sideMargin,
+            screenWidth - imageWidth - sideMargin
+        );
+
+        const randomLeft =
+            sideMargin + Math.random() * (maxLeft - sideMargin);
+
+        img.style.left = randomLeft + "px";
+    };
+
+    // Remove after animation finishes
     setTimeout(() => {
         img.remove();
     }, 8000);
 }
 
+
+// Start floating pictures
 setInterval(createFloatingPicture, 2700);
